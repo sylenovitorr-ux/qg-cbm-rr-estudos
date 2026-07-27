@@ -2,11 +2,14 @@
   'use strict';
 
   const APP_KEY = 'qgCbmState';
-  const CONFIG_KEY = 'qgCbmSupabaseConfig';
   const SESSION_KEY = 'qgCbmSupabaseSession';
   const META_KEY = 'qgCbmSyncMeta';
   const BACKUP_KEY = 'qgCbmStateBeforeRemoteSync';
   const DEVICE_KEY = 'qgCbmDeviceId';
+  const DEFAULT_CONFIG = Object.freeze({
+    url: 'https://bormijoqcxkdersftifn.supabase.co',
+    anonKey: 'sb_publishable_J8Fjv8zDaakH6HcHWGC6ng_SGygTjSQ'
+  });
 
   const readJSON = (key, fallback = null) => {
     try {
@@ -18,7 +21,7 @@
 
   const writeJSON = (key, value) => localStorage.setItem(key, JSON.stringify(value));
   const nowISO = () => new Date().toISOString();
-  const getConfig = () => readJSON(CONFIG_KEY, {});
+  const getConfig = () => DEFAULT_CONFIG;
   const getSession = () => readJSON(SESSION_KEY, null);
   const getMeta = () => readJSON(META_KEY, { dirty: false, lastLocalChange: null, lastRemoteSync: null });
   const setMeta = patch => writeJSON(META_KEY, { ...getMeta(), ...patch });
@@ -241,7 +244,7 @@
             <h3>Conta e sincronização</h3>
             <div class="subtle" id="syncEmailLabel">Nenhuma conta conectada</div>
           </div>
-          <span id="syncStatus" class="sync-status setup">Supabase ainda não configurado</span>
+          <span id="syncStatus" class="sync-status signed-out">Entre para sincronizar</span>
         </div>
         <p class="subtle">O app salva primeiro neste aparelho e sincroniza quando houver internet. Seus registros locais não são apagados ao entrar.</p>
         <div class="actions">
@@ -252,16 +255,7 @@
       <dialog id="accountDialog">
         <div class="modal-head"><h3>Conta e nuvem</h3><button class="close" id="closeAccountBtn">×</button></div>
         <div class="modal-body">
-          <div id="supabaseSetup">
-            <h3>1. Conectar o projeto Supabase</h3>
-            <div class="form-grid">
-              <div class="field full"><label>Project URL</label><input id="supabaseUrl" type="url" placeholder="https://seu-projeto.supabase.co"></div>
-              <div class="field full"><label>Publishable / anon key</label><input id="supabaseAnonKey" autocomplete="off" placeholder="sb_publishable_..."></div>
-              <div class="field full"><button class="btn secondary" id="saveSupabaseConfig">Salvar conexão</button></div>
-            </div>
-            <p class="subtle">Use somente a chave pública. Nunca cole a chave service_role.</p>
-          </div>
-          <hr class="sync-divider">
+          <p class="subtle">Banco do QG conectado. Use a mesma conta nos módulos Estudos e TAF.</p>
           <form id="accountForm" class="form-grid">
             <div class="field full"><label>E-mail</label><input id="accountEmail" type="email" autocomplete="email" required></div>
             <div class="field full"><label>Senha</label><input id="accountPassword" type="password" autocomplete="current-password" minlength="6" required></div>
@@ -276,20 +270,9 @@
       </dialog>
     `);
 
-    const config = getConfig();
-    document.querySelector('#supabaseUrl').value = config.url || '';
-    document.querySelector('#supabaseAnonKey').value = config.anonKey || '';
     document.querySelector('#openAccountBtn').onclick = openAccountDialog;
     document.querySelector('#syncNowBtn').onclick = () => syncNow();
     document.querySelector('#closeAccountBtn').onclick = () => document.querySelector('#accountDialog').close();
-    document.querySelector('#saveSupabaseConfig').onclick = () => {
-      const url = normalizeUrl(document.querySelector('#supabaseUrl').value);
-      const anonKey = document.querySelector('#supabaseAnonKey').value.trim();
-      if (!url || !anonKey) return showMessage('Preencha a URL e a chave pública.');
-      writeJSON(CONFIG_KEY, { url, anonKey });
-      showMessage('Conexão salva. Agora crie sua conta ou entre.');
-      updateStatus();
-    };
     document.querySelector('#accountForm').onsubmit = async event => {
       event.preventDefault();
       await runAuth('login');
