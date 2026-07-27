@@ -1,7 +1,7 @@
 {
-  "name": "QG CBM-RR Estudos",
-  "short_name": "QG Estudos",
-  "description": "Ciclo de estudos para CFO e Soldado do CBM-RR, com prioridade para o CFO 2027.",
+  "name": "QG CBM-RR — Estudos e TAF",
+  "short_name": "QG CBM-RR",
+  "description": "Estudos, revisões, treinos, simulados e evolução para as provas do CBM-RR.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
